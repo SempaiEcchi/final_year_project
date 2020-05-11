@@ -1,4 +1,5 @@
 import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:zavrsnirad/logger/logger.dart';
 import 'package:zavrsnirad/mvoas/service/connectivity_service.dart';
 import 'package:zavrsnirad/shared/interfaces.dart';
@@ -8,13 +9,18 @@ class ESP32Service implements Disposable {
 
   ESP32Service({this.connectivityService});
 
-  Future<IOWebSocketChannel> connectToChannel({ip}) async {
+  WebSocketChannel channel;
+
+  Future<void> connectToChannel({ip}) async {
     try {
-      IOWebSocketChannel ioWebSocketChannel = IOWebSocketChannel.connect(ip);
-      return ioWebSocketChannel;
-    } catch (e) {
+      channel= IOWebSocketChannel.connect(ip);
+     } catch (e) {
       logger.warning('Error : $e');
     }
+  }
+
+  Future<void> disconnectFromChannel() async {
+    await channel.sink.close();
   }
 
   @override

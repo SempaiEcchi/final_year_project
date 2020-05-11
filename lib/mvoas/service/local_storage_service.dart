@@ -19,6 +19,9 @@ class LocalStorageService implements Disposable {
 
   StorageE get _currentStorage => storageE$.value;
 
+  String get currentIP => _currentStorage.ip;
+  String get currentSSID => _currentStorage.ssid;
+
   static const String initialIP = "ws://192.168.4.1:8888";
   static const String initialSearchSSID = "ZAVRSNI";
 

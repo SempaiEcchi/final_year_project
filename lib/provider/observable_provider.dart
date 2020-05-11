@@ -3,7 +3,9 @@ import 'package:provider/single_child_widget.dart';
 import 'package:zavrsnirad/mvoas/model/connection_model.dart';
 import 'package:zavrsnirad/mvoas/model/local_storage_model.dart';
 import 'package:zavrsnirad/mvoas/observable/connection_o.dart';
+import 'package:zavrsnirad/mvoas/observable/esp32_o.dart';
 import 'package:zavrsnirad/mvoas/observable/storage_o.dart';
+import 'package:zavrsnirad/mvoas/service/esp32_service.dart';
 
 List<SingleChildWidget> observableProviders = [
   StreamProvider<StorageO>(

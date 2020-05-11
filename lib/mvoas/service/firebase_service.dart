@@ -52,4 +52,6 @@ class FirebaseService implements Disposable {
   Future<void> dispose() {
     // TODO: implement dispose
   }
+
+  saveVideoToFirebase({File video})async {}
 }

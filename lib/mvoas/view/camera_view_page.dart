@@ -13,18 +13,18 @@ import 'package:gesture_zoom_box/gesture_zoom_box.dart';
 import 'package:intl/intl.dart';
 import 'package:permission/permission.dart';
 import 'package:progress_dialog/progress_dialog.dart';
+import 'package:provider/provider.dart';
 import 'package:save_in_gallery/save_in_gallery.dart';
+import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:zavrsnirad/mvoas/action/esp32_actions.dart';
 import 'package:zavrsnirad/mvoas/action/firebase_actions.dart';
+import 'package:zavrsnirad/mvoas/service/esp32_service.dart';
 import 'package:zavrsnirad/mvoas/view/camera_connect_page.dart';
 import 'package:zavrsnirad/provider/_provider.dart';
 import 'package:zavrsnirad/t.dart';
 
 class CameraViewPage extends StatefulWidget {
-  final WebSocketChannel channel;
-
-  CameraViewPage({Key key, @required this.channel}) : super(key: key);
-
   @override
   _CameraViewPageState createState() => _CameraViewPageState();
 }
@@ -33,10 +33,6 @@ class _CameraViewPageState extends State<CameraViewPage> {
   final double videoWidth = 640;
   final double videoHeight = 480;
 
-  double newVideoSizeWidth = 640;
-  double newVideoSizeHeight = 480;
-
-  bool isLandscape;
   String _timeString;
 
   var _globalKey = new GlobalKey();
@@ -48,10 +44,15 @@ class _CameraViewPageState extends State<CameraViewPage> {
   int frameNum;
   ProgressDialog pr;
 
+  ESP32A esp32a;
+
+  double adaptedWidth;
+
+  double newVideoSizeHeight=480;
   @override
   void initState() {
     super.initState();
-    isLandscape = false;
+    esp32a = StaticProvider.of<ESP32A>(context);
     isRecording = false;
 
     _timeString = _formatDateTime(DateTime.now());
@@ -76,13 +77,20 @@ class _CameraViewPageState extends State<CameraViewPage> {
 
   @override
   void dispose() {
-    widget.channel.sink.close();
+    esp32a.disconnectFromChannel();
     _timer.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    var screenWidth = MediaQuery.of(context).size.width;
+    var screenHeight = MediaQuery.of(context).size.height;
+
+    adaptedWidth = screenWidth;
+    newVideoSizeHeight = videoHeight * adaptedWidth / videoWidth;
+
+
     return Scaffold(
       body: false
           ? RepaintBoundary(
@@ -93,28 +101,11 @@ class _CameraViewPageState extends State<CameraViewPage> {
                 color: Colors.red,
               ),
             )
-          : OrientationBuilder(builder: (context, orientation) {
-              var screenWidth = MediaQuery.of(context).size.width;
-              var screenHeight = MediaQuery.of(context).size.height;
-
-              if (orientation == Orientation.portrait) {
-                //screenWidth < screenHeight
-
-                isLandscape = false;
-                newVideoSizeWidth = screenWidth;
-                newVideoSizeHeight =
-                    videoHeight * newVideoSizeWidth / videoWidth;
-              } else {
-                isLandscape = true;
-                newVideoSizeHeight = screenHeight;
-                newVideoSizeWidth =
-                    videoWidth * newVideoSizeHeight / videoHeight;
-              }
-
+          : Consumer<ESP32Service>(builder: (context, o, c) {
               return Container(
                 color: Colors.black,
                 child: StreamBuilder(
-                  stream: widget.channel.stream,
+                  stream: o.channel.stream,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.done) {
                       Future.delayed(Duration(milliseconds: 100)).then((_) {
@@ -144,9 +135,6 @@ class _CameraViewPageState extends State<CameraViewPage> {
                         children: <Widget>[
                           Column(
                             children: <Widget>[
-                              SizedBox(
-                                height: isLandscape ? 0 : 30,
-                              ),
                               Stack(
                                 children: <Widget>[
                                   RepaintBoundary(
@@ -158,8 +146,8 @@ class _CameraViewPageState extends State<CameraViewPage> {
                                       child: Image.memory(
                                         snapshot.data,
                                         gaplessPlayback: true,
-                                        width: newVideoSizeWidth,
-                                        height: newVideoSizeHeight,
+                                        width: adaptedWidth,
+                                        height: videoHeight,
                                       ),
                                     ),
                                   ),
@@ -235,7 +223,7 @@ class _CameraViewPageState extends State<CameraViewPage> {
                 ),
               );
             }),
-      floatingActionButton: _getFab(),
+      floatingActionButton: speedDial(),
     );
   }
 
@@ -257,7 +245,7 @@ class _CameraViewPageState extends State<CameraViewPage> {
         imgFile.createSync();
         imgFile.writeAsBytes(pngBytes);
         if (saveToFirebase)
-          StaticProvider.of<SaveScreenshotToFirebaseA>(context)
+          StaticProvider.of<FirebaseA>(context)
               .saveScreenshotToFirebase(imgFile);
       }
     });
@@ -283,13 +271,12 @@ class _CameraViewPageState extends State<CameraViewPage> {
             }));
   }
 
-  Widget _getFab() {
+  Widget speedDial() {
     return SpeedDial(
-      overlayOpacity: 0.1,
+      overlayOpacity: 0.0,
       animatedIcon: AnimatedIcons.menu_close,
       animatedIconTheme: IconThemeData(size: 22),
       visible: true,
-//      visible: true,
       curve: Curves.bounceIn,
       children: [
         SpeedDialChild(
@@ -303,24 +290,26 @@ class _CameraViewPageState extends State<CameraViewPage> {
           },
         ),
         SpeedDialChild(
-          child: Icon(Icons.photo_camera),
+                    child: Icon(Icons.photo_camera),
           onTap: () async {
             await takeScreenShot();
           },
         ),
         SpeedDialChild(
             child: isRecording ? Icon(Icons.stop) : Icon(Icons.videocam),
-            onTap: videoRecording)
+            onTap: videoRecording),
+        SpeedDialChild(
+            child: isRecording ? Icon(Icons.file_upload) : Icon(Icons.videocam),
+            onTap: videoRecording(saveToFirebase:true))
       ],
     );
   }
 
-  videoRecording() {
+  videoRecording({bool saveToFirebase=false}) {
     isRecording = !isRecording;
-
     if (!isRecording && frameNum > 0) {
       frameNum = 0;
-      makeVideoWithFFMpeg();
+      makeVideoWithFFMpeg(saveToFirebase);
     }
   }
 
@@ -328,7 +317,7 @@ class _CameraViewPageState extends State<CameraViewPage> {
     return await _flutterFFmpeg.execute(command);
   }
 
-  makeVideoWithFFMpeg() {
+  makeVideoWithFFMpeg(bool saveToFirebase) {
     pr.show();
     String tempVideofileName = "${DateTime.now().millisecondsSinceEpoch}.mp4";
     execute(VideoUtil.generateEncodeVideoScript("mpeg4", tempVideofileName))

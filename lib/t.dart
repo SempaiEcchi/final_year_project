@@ -96,7 +96,7 @@ class _BlinkingTimerState extends State<BlinkingTimer>
           SizedBox(
             width: 10,
           ),
-          Text(_timeString)
+          Text(_timeString,style: TextStyle(color: Colors.white),)
         ],
       ),
     );

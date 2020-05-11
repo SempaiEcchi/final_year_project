@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:loading_animations/loading_animations.dart';
 import 'package:permission/permission.dart';
 import 'package:provider/provider.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:zavrsnirad/mvoas/action/esp32_actions.dart';
 import 'package:zavrsnirad/mvoas/action/storage_actions.dart';
 import 'package:zavrsnirad/mvoas/observable/connection_o.dart';
@@ -113,14 +114,13 @@ class _ConnectToCameraPageState extends State<ConnectToCameraPage> {
     });
   }
 
-  _connectToChannel(BuildContext context) async {
-    await StaticProvider.of<ConnectToChannelA>(context)
+  _connectToChannel (BuildContext context) async {
+    await StaticProvider.of<ESP32A>(context)
         .connectToChannel()
         .then((channel) {
-      return Navigator.of(context).push(MaterialPageRoute(
+       return Navigator.of(context).push(MaterialPageRoute(
         builder: (_) => CameraViewPage(
-          channel: channel,
-        ),
+         ),
       ));
     }).catchError((err) {
       Scaffold.of(context).showSnackBar(SnackBar(
@@ -128,6 +128,7 @@ class _ConnectToCameraPageState extends State<ConnectToCameraPage> {
       ));
     });
   }
+
 
   _retryConnection(BuildContext context) =>
       StaticProvider.of<ConnectivityService>(context).initConnection();
