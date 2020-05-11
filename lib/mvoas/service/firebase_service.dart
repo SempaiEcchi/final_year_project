@@ -44,7 +44,6 @@ class FirebaseService implements Disposable {
     final storageRef = storage.ref().child('gallery');
     storageRef.listAll().then((map) {
       var t = map['items'];
-
       itemsE$.add(ItemsE.fromMap(map));
     });
   }

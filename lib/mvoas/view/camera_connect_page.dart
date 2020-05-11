@@ -24,6 +24,7 @@ class _ConnectToCameraPageState extends State<ConnectToCameraPage> {
       return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
+          elevation: 10,
           leading: IconButton(
             color: Colors.black,
             icon: Icon(Icons.photo_library),
@@ -39,10 +40,10 @@ class _ConnectToCameraPageState extends State<ConnectToCameraPage> {
               },
             )
           ],
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.orange,
           centerTitle: true,
           title: Text(
-            'ESP32-CAM App',
+            'ESP32 CAM App',
             style: TextStyle(
               color: Colors.black,
               fontWeight: FontWeight.w400,
@@ -58,7 +59,7 @@ class _ConnectToCameraPageState extends State<ConnectToCameraPage> {
                 backgroundColor: Colors.white,
                 borderColor: o.cstatus == Cstatus.notConnected
                     ? Colors.red
-                    : Colors.purpleAccent,
+                    : Colors.black,
                 size: 100,
               ),
               Spacer(),
@@ -77,7 +78,7 @@ class _ConnectToCameraPageState extends State<ConnectToCameraPage> {
                 height: 20,
               ),
               RaisedButton(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(10),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16.0),
                     side: BorderSide(color: Colors.red)),
@@ -91,12 +92,10 @@ class _ConnectToCameraPageState extends State<ConnectToCameraPage> {
                 },
                 color: o.cstatus == Cstatus.notConnected
                     ? Colors.red
-                    : Colors.purpleAccent,
+                    : Colors.black,
                 textColor: Colors.white,
                 child: Text(
-                  o.cstatus == Cstatus.connected
-                      ? "Connect"
-                      : "Retry connection",
+                  o.cstatus == Cstatus.connected ? "Watch" : "Retry connection",
                   style: TextStyle(
                     fontWeight: FontWeight.w400,
                     fontSize: 30,
@@ -130,9 +129,8 @@ class _ConnectToCameraPageState extends State<ConnectToCameraPage> {
     });
   }
 
-  void _retryConnection(BuildContext context) {
-    StaticProvider.of<ConnectivityService>(context).initConnection();
-  }
+  _retryConnection(BuildContext context) =>
+      StaticProvider.of<ConnectivityService>(context).initConnection();
 }
 
 class Settings extends StatefulWidget {
@@ -155,7 +153,7 @@ class _SettingsState extends State<Settings> {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                'Here you can edit the connection IP and search SSID',
+                'Here you can edit the connection IP and search SSID.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontSize: 23,
@@ -193,7 +191,7 @@ class _SettingsState extends State<Settings> {
               height: 8,
             ),
             RaisedButton(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(10),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16.0),
                   side: BorderSide(color: Colors.red)),
@@ -208,7 +206,7 @@ class _SettingsState extends State<Settings> {
               color: Colors.red,
               textColor: Colors.white,
               child: Text(
-                "SAVE",
+                "Save",
                 style: TextStyle(
                   fontWeight: FontWeight.w400,
                   fontSize: 30,

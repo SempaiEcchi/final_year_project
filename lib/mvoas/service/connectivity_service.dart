@@ -1,5 +1,6 @@
 import 'dart:async';
 
+
 import 'package:connectivity/connectivity.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:zavrsnirad/logger/logger.dart';
@@ -36,7 +37,7 @@ class ConnectivityService implements Disposable {
     });
   }
 
-  void initConnection() async {
+  Future<void> initConnection() async {
     ConnectivityResult result;
 
     try {

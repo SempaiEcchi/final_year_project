@@ -40,7 +40,6 @@ class _CameraViewPageState extends State<CameraViewPage> {
   String _timeString;
 
   var _globalKey = new GlobalKey();
-  final _imageSaver = ImageSaver();
 
   Timer _timer;
   bool isRecording;
@@ -289,7 +288,7 @@ class _CameraViewPageState extends State<CameraViewPage> {
       overlayOpacity: 0.1,
       animatedIcon: AnimatedIcons.menu_close,
       animatedIconTheme: IconThemeData(size: 22),
-      visible: isLandscape,
+      visible: true,
 //      visible: true,
       curve: Curves.bounceIn,
       children: [
@@ -337,7 +336,6 @@ class _CameraViewPageState extends State<CameraViewPage> {
       pr.hide();
       if (rc == 0) {
         print("Video complete");
-
         String outputPath = VideoUtil.appTempDir + "/$tempVideofileName";
         _saveVideo(outputPath);
       }

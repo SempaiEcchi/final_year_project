@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 class StorageO {
-  final String ip, ssid
-   ;
+  final String ip, ssid;
 
   const StorageO({
     @required this.ip,
